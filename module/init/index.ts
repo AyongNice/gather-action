@@ -1,0 +1,160 @@
+import event from '../event-listener';
+import DataProcess from '../data-store/data-process';
+import {InitParm, Evt, ViewIfo, TimeInfo} from '../data-type';
+import {log} from "../log-output";
+
+class MonitoInit {
+    private dataProcess: DataProcess;
+    private pageMonito = {
+        vue: {
+            info: '页面跳转',
+            actionType: 'pagejump'
+        },
+        uniapp: {
+            info: '应用首次进入',
+            actionType: 'pageLoad'
+        }
+    }
+    private monitoConfigList: ViewIfo[] = [
+        {
+            elementText: '',
+            actionType: ''
+        }
+    ];
+
+    constructor() {
+        this.dataProcess = new DataProcess();
+    }
+
+    eventInit(parmas: InitParm) {
+        this.monitoConfigList = parmas.globaMonitoConfigList;
+        this.dataProcess.setisPosition(parmas.isPosition);
+        this.dataProcess.setPackageName(parmas.projectName);
+        this.dataProcess.setUserInfo(parmas.userInfo);
+        this.dataProcess.setMaxRequesLength(parmas.maxRequesGatewayLength)
+        this.dataProcess.setRequesKey(parmas.reques?.requesKey as string)
+        this.dataProcess.setUrl(parmas.reques?.requestUrl as string)
+
+        this.dataProcess.dbInit();
+        const map: { [key: string]: ViewIfo } = {}
+        this.monitoConfigList.forEach(async item => {
+            map[item.elementText as string] = item;
+        })
+
+        // 全局点击事件
+        event.addEventListener({
+            element: window,
+            type: 'click',
+            handler: async (evt: PointerEvent) => {
+                //通过配置信息进行过滤点击选择
+                const dom = document.elementFromPoint(evt.pageX, evt.pageY);
+                if (dom) {
+                    const timestamp: Number = new Date().getTime();
+                    if (map[dom?.textContent?.trim() as string]) {
+                        await this.dataProcess.track({
+                            id: timestamp.toString(),
+                            pageUrl: dom.baseURI,
+                            actionType:'click',
+                            // @ts-ignore
+                            "elementText": dom?.textContent,
+                            ...map[dom?.textContent?.trim() as string]
+                        });
+                    }
+
+                }
+            }
+        });
+        //页面显示/隐藏
+        event.addEventListener({
+            element: document,
+            type: 'visibilitychange',
+            handler: event => {
+                if (!document.hidden) {
+                    // 如果是显示状态执行相应的事件
+                    console.log('显示---状态执行相应的事件');
+                } else {
+                    // 如果是隐藏状态执行相应的事件
+                    console.log('隐藏---状态执行相应的事件');
+                }
+            }
+        });
+
+        //页面返回
+        event.addEventListener({
+            element: window,
+            type: 'popstate',
+            handler: event => {
+                // this.pageUrlRecord(event.newURL as String, event.oldURL as String);
+                this.dataProcess.pageTrack({
+                    id: event.timeStamp.toString(),
+                    info: '页面返回',
+                    pageUrl: document.baseURI as string,
+                    actionType: 'pageBack'
+                });
+            }
+        });
+
+        const _wr = function <T extends keyof History>(type: T) {
+            const orig: Function = history[type];
+            return function () {
+                const rv = orig.apply(history, arguments);
+                const e: Evt = new Event(type);
+                e.arguments = arguments;
+                window.dispatchEvent(e);
+                return orig;
+            };
+        };
+        history.pushState = _wr('pushState');
+        history.replaceState = _wr('replaceState');
+        //页面首次加载 || ('vue', 'react' 项目跳转 首次)
+        event.addEventListener({
+            element: window,
+            type: 'replaceState',
+            handler: event => {
+                const url: String = document.baseURI as String;
+                this.dataProcess.pageTrack({
+                    id: event.timeStamp.toString(),
+                    info: this.pageMonito.uniapp.info,
+                    pageUrl: url,
+                    actionType: this.pageMonito.uniapp.actionType
+                });
+
+                if (['vue', 'react'].includes(parmas.frameType as string)) {//vue项目 页面进入类型指针 互换
+                    this.pageMonito.uniapp = this.pageMonito.vue
+                }
+            }
+        });
+        if (parmas.frameType as string === 'uniapp') {
+            event.addEventListener({
+                element: window,
+                type: 'pushState',
+                handler: event => {
+                    const url: String = event.arguments[2] as String;
+                    console.log('页面跳转', url);
+                    // this.pageUrlRecord(url as String, this.newPageUrl as String);
+                    this.dataProcess.pageTrack({
+                        id: event.timeStamp.toString(),
+                        info: '页面跳转',
+                        pageUrl: url,
+                        actionType: 'pagejump'
+                    });
+                }
+            });
+        }
+        // 	//页面路由变化
+
+    }
+
+    /**
+     * @param {Object} parmas 数据处理
+     */
+    async track(params: TimeInfo | ViewIfo): Promise<void> {
+        try {
+            await this.dataProcess.track(params);
+        } catch (logInfo) {
+            log({logInfo, logMake: 'initTrack错误'})
+        }
+    }
+}
+
+export default MonitoInit;
