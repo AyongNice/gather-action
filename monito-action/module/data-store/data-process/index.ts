@@ -2,6 +2,8 @@ import Data from '../data';
 import hardware from '../../hardware-data';
 import {observer, aboutPerformance} from '../../performance';
 import {log} from '../../log-output';
+import { clear} from './db.ts';
+
 
 import {
     PageInfo,
@@ -127,11 +129,13 @@ class DataProcess {
         if (this.url && this.maxRequesGatewayLength === 1) {
             try {
                 await Http.httpRequestPost({[this.requesKey]: data})
+                await clear()
             } catch (logInfo) {
                 log({
                     logInfo,
                     logMake: '上传数据失败',
                 });
+                await clear()
             }
         } else {
             this.data.storageData(data);
