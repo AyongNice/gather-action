@@ -3,10 +3,10 @@
 
 ## 技术栈介绍
 
-1.  语言： typescript 
-2.  存储数据 indexDB
-3.  上传数据 ： axios post请求
-4.  构建工具使用 ： vite
+1.  语言： Typescript 
+2.  存储数据 IndexDB
+3.  上传数据 ： Axios post请求
+4.  构建工具使用 ：Vite
 
 ### 开发流程 
 
