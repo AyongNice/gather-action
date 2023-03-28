@@ -6,6 +6,7 @@ export default defineConfig({
         lib: { // 库模式构建相关配置
             entry: './index.ts',
             name: "muk-ui",
+            fileName:'monito-action'
         }
     },
 })
