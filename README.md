@@ -24,3 +24,29 @@
 2. 项目内也需要添加 tsconfig.json，可以复制组件内的 tsconfig.json
 3. 项目需要安装 typescript 依赖
 
+### 组件模块注释
+
+文件顺序按照系统文件排列数据
+
+    |---monito-action //组件外层目录
+    |   |---module //组件模块层
+    |   |   |--data-store //数据模块
+    |   |   |   |--data //数据存储模块
+    |   |   |   |  |--db// indexDB ts方法封装
+    |   |   |   |  |--index// 数据存储管理类(包含数据上报)
+    |   |   |   |--data-process //数据层逻辑整合 (包含数据上报)
+    |   |   |   
+    |   |   |--data-type//数据类型interface接口 
+    |   |   |--event-listener//事件监听功能封装
+    |   |   |--global-const//全局常量
+    |   |   |--hardware-data//设备硬件数据处理
+    |   |   |--hardware-data//设备硬件数据处理
+    |   |   |--init//埋点初始化(点击事件监听, 页面路由监听)
+    |   |   |--log-output//日志输出模块
+    |   |   |--performance //性能分析模块
+    |   |   |--report//数据上报方法封装
+    |   |   |---index//模块层入口
+    |------index//组件入口 
+
+## 埋点组件架构图
+![全埋点架构图](https://user-images.githubusercontent.com/89636513/228181013-fb31866e-a8b0-43ad-bfc7-d668cf9add32.png)
