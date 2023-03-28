@@ -111,13 +111,20 @@ class Data {
      */
     storageData(data: any) {
         onDBSelect('monito', '1', async ({add}) => {
-            add({
-                id: data.id || data.entetTim,
-                elementText: data.elementText || 'page',
-                actionType: data.actionType,
-                pageUrl: data.pageUrl,
-                value: JSON.stringify(data)
-            });
+            try {
+                add({
+                    id: data.id || data?.entetTim || (+new Data()).toString(),
+                    elementText: data?.elementText || (+new Data()).toString(),
+                    actionType: data?.actionType || (+new Data()).toString(),
+                    pageUrl: data?.pageUrl || (+new Data()).toString(),
+                    value: JSON.stringify(data)
+                });
+            } catch (logInfo) {
+                log({
+                    logInfo,
+                    logMake: '存储数据失败'
+                });
+            }
             try {
                 const count = await getCountData();
                 window.dispatchEvent(this.monito);
