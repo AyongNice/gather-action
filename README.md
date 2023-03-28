@@ -20,7 +20,7 @@
 
 ### 环境要求 
 
-1. 建议使用 Vue3 版本的项目 以便于 更适配 typescript 语言环境
+1. 建议使用 Vue3 版本的项目 以便于 更适配 typescript 语言环境,编辑器推荐使用webstorm
 2. 项目内也需要添加 tsconfig.json，可以复制组件内的 tsconfig.json
 3. 项目需要安装 typescript 依赖
 
