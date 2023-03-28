@@ -26,8 +26,8 @@ class Http {
 		this.url = url
 	}
 	static setRequestConfigs(config: any): void {
-		this.url = config.requestUrl;
-		this.config = { ...this.config, ...config.requesHeader }
+		this.url = config?.requestUrl;
+		this.config = { ...this.config, ...config?.requesHeader }
 	}
 	private static axiosInstance = axios.create(defaultConfig)
 	// 封装请求（公有属性） 函数返回类型为一个泛式

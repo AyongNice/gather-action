@@ -2,7 +2,7 @@ import Data from '../data';
 import hardware from '../../hardware-data';
 import {observer, aboutPerformance} from '../../performance';
 import {log} from '../../log-output';
-import { clear} from './db.ts';
+import { clear} from '../data/db';
 
 
 import {
