@@ -40,7 +40,6 @@
     |   |   |--event-listener//事件监听功能封装
     |   |   |--global-const//全局常量
     |   |   |--hardware-data//设备硬件数据处理
-    |   |   |--hardware-data//设备硬件数据处理
     |   |   |--init//埋点初始化(点击事件监听, 页面路由监听)
     |   |   |--log-output//日志输出模块
     |   |   |--performance //性能分析模块
