@@ -14,7 +14,9 @@
 		"H5全埋点组件",
 		"行为采集",
 		"数据统计",
-		"数据上报"
+		"数据上报",
+		"IndexDB",
+		"轻量级"
 	],
 	"license": "ISC",
 	"peerDependencies": {
