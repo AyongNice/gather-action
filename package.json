@@ -2,7 +2,7 @@
 	"name": "monito-action",
 	"version": "1.0.4",
 	"description": "H5全埋点组件",
-	"main": "./dist/monito-action.mjs",
+	"main": "./dist/monito-action.js",
 	"author": "AyongNice@163.com",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
