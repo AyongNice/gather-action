@@ -4,8 +4,8 @@ import {InitParm, Evt, ViewIfo, TimeInfo} from '../data-type';
 import {log} from "../log-output";
 
 class MonitoInit {
-    private dataProcess: DataProcess;
-    private pageMonito = {
+    private dataProcess: DataProcess;//数据处理对象
+    private pageMonito = {// 页面采集类型指针
         vue: {
             info: '页面跳转',
             actionType: 'pagejump'
@@ -15,7 +15,7 @@ class MonitoInit {
             actionType: 'pageLoad'
         }
     }
-    private monitoConfigList: ViewIfo[] = [
+    private monitoConfigList: ViewIfo[] = [//采集配置
         {
             elementText: '',
             actionType: ''
@@ -48,6 +48,11 @@ class MonitoInit {
             handler: async (evt: PointerEvent) => {
                 //通过配置信息进行过滤点击选择
                 const dom = document.elementFromPoint(evt.pageX, evt.pageY);
+               if(dom?.nodeName === 'IMG'){
+                   // @ts-ignore
+                   console.log(dom?.src)
+
+               }
                 if (dom) {
                     const timestamp: Number = new Date().getTime();
                     if (map[dom?.textContent?.trim() as string]) {

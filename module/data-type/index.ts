@@ -49,6 +49,7 @@ export interface ViewIfo {
     pageUrl?: String; //当前页面地址
     elementText: String; //dom文案
     actionType?: String; //采集类型
+    domType?:keyof ['IMG','view']
 }
 
 export interface PageInfo {
