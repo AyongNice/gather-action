@@ -48,11 +48,11 @@ class MonitoInit {
             handler: async (evt: PointerEvent) => {
                 //通过配置信息进行过滤点击选择
                 const dom = document.elementFromPoint(evt.pageX, evt.pageY);
-               if(dom?.nodeName === 'IMG'){
-                   // @ts-ignore
-                   console.log(dom?.src)
-
-               }
+               // if(dom?.nodeName === 'IMG'){
+               //     // @ts-ignore
+               //     // console.log(dom?.src)
+               //
+               // }
                 if (dom) {
                     const timestamp: Number = new Date().getTime();
                     if (map[dom?.textContent?.trim() as string]) {
