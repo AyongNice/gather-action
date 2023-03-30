@@ -129,12 +129,14 @@ class DataProcess {
         if (this.url && this.maxRequesGatewayLength === 1) {
             try {
                 await Http.httpRequestPost({[this.requesKey]: data})
+                // @ts-ignore
                 await clear()
             } catch (logInfo) {
                 log({
                     logInfo,
                     logMake: '上传数据失败',
                 });
+                // @ts-ignore
                 await clear()
             }
         } else {

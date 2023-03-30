@@ -21,6 +21,7 @@ class MonitoAction {
 			this.monitoInit.eventInit(parmas);
 			Http.setRequestConfigs(reques);
 		}
+
 	}
 	/**
 	 * @param {Object} params 数据处理

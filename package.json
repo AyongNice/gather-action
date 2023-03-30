@@ -1,7 +1,8 @@
 {
 	"name": "monito-action",
-	"version": "1.0.4",
+	"version": "1.0.7",
 	"description": "H5全埋点组件",
+	"main": "./dist/monito-action.js",
 	"author": "AyongNice@163.com",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
@@ -9,6 +10,7 @@
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
+		"前端",
 		"埋点",
 		"H5全埋点组件",
 		"行为采集",
@@ -27,9 +29,7 @@
 	},
 	"files": [
 		"dist",
-		"user.md"
-	],
-	"dependencies": {
-		"monito-action": "^1.0.4"
-	}
+		"user.md",
+		"README.md"
+	]
 }

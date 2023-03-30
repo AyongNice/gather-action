@@ -110,13 +110,15 @@ class Data {
      * @param {Object} storage.info 数据
      */
     storageData(data: any) {
+
         onDBSelect('monito', '1', async ({add}) => {
+            console.log()
             try {
                 add({
-                    id: data.id || data?.entetTim || (+new Data()).toString(),
-                    elementText: data?.elementText || (+new Data()).toString(),
-                    actionType: data?.actionType || (+new Data()).toString(),
-                    pageUrl: data?.pageUrl || (+new Data()).toString(),
+                    id: data.id || data?.entetTim || new Date().getTime().toString(),
+                    elementText: data?.elementText,
+                    actionType: data?.actionType,
+                    pageUrl: data?.pageUrl,
                     value: JSON.stringify(data)
                 });
             } catch (logInfo) {
