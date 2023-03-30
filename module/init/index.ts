@@ -1,6 +1,6 @@
 import event from '../event-listener';
 import DataProcess from '../data-store/data-process';
-import {InitParm, Evt, ViewIfo, TimeInfo} from '../data-type';
+import {InitParm, Evt, ViewIfo, TimeInfo, ImgIfo} from '../data-type';
 import {log} from "../log-output";
 
 class MonitoInit {
@@ -21,13 +21,21 @@ class MonitoInit {
             actionType: ''
         }
     ];
+    private monitoImgList: ImgIfo[] = [//图片采集配置
+        {
+            imgSrc: '',
+        }
+    ];
 
     constructor() {
         this.dataProcess = new DataProcess();
     }
 
     eventInit(parmas: InitParm) {
+        console.log('parmas', parmas)
         this.monitoConfigList = parmas.globaMonitoConfigList;
+        this.monitoImgList = parmas.globaMonitoImgList ?? [];
+
         this.dataProcess.setisPosition(parmas.isPosition);
         this.dataProcess.setPackageName(parmas.projectName);
         this.dataProcess.setUserInfo(parmas.userInfo);
@@ -36,33 +44,42 @@ class MonitoInit {
         this.dataProcess.setUrl(parmas.reques?.requestUrl as string)
 
         this.dataProcess.dbInit();
-        const map: { [key: string]: ViewIfo } = {}
-        this.monitoConfigList.forEach(async item => {
-            map[item.elementText as string] = item;
-        })
+
+        /** view采集key表 **/
+        const viewMap: { [key: string]: ViewIfo } = {}
+        this.monitoConfigList.forEach(_ => viewMap[_.elementText as string] = _)
+
+        /** img采集key表 **/
+        const imgMap: { [key: string]: ImgIfo } = {}
+        this.monitoImgList.forEach(_ => imgMap[_.imgSrc as string] = _)
+        const regex: RegExp = /\/([^\/]*)$/;
 
         // 全局点击事件
         event.addEventListener({
             element: window,
             type: 'click',
             handler: async (evt: PointerEvent) => {
+                const timestamp: Number = new Date().getTime();
                 //通过配置信息进行过滤点击选择
                 const dom = document.elementFromPoint(evt.pageX, evt.pageY);
-               // if(dom?.nodeName === 'IMG'){
-               //     // @ts-ignore
-               //     // console.log(dom?.src)
-               //
-               // }
+
+                if (dom?.nodeName === 'IMG') {
+                    // @ts-ignore
+                    const res = dom?.src.match(regex)[1];
+                    // @ts-ignore
+                    if (dom?.src.includes(imgMap[res]?.imgSrc)) {
+
+                    }
+                }
                 if (dom) {
-                    const timestamp: Number = new Date().getTime();
-                    if (map[dom?.textContent?.trim() as string]) {
+                    if (viewMap[dom?.textContent?.trim() as string]) {
                         await this.dataProcess.track({
                             id: timestamp.toString(),
                             pageUrl: dom.baseURI,
-                            actionType:'click',
+                            actionType: 'click',
                             // @ts-ignore
                             "elementText": dom?.textContent,
-                            ...map[dom?.textContent?.trim() as string]
+                            ...viewMap[dom?.textContent?.trim() as string]
                         });
                     }
 

@@ -17,6 +17,10 @@ export interface InitParm {
     showLog: Boolean; //是否打印日志
     isPosition: Boolean; //是否获取定位信息
     globaMonitoConfigList: ViewIfo[]; //埋点采集配置
+    globaMonitoImgList?:ImgIfo[]//图片点击事件采集
+}
+export interface ImgIfo {
+    imgSrc:String | string;
 }
 
 enum Direction {
