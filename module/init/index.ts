@@ -76,10 +76,8 @@ class MonitoInit {
             handler: event => {
                 if (!document.hidden) {
                     // 如果是显示状态执行相应的事件
-                    console.log('显示---状态执行相应的事件');
                 } else {
                     // 如果是隐藏状态执行相应的事件
-                    console.log('隐藏---状态执行相应的事件');
                 }
             }
         });
