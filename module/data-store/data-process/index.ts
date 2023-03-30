@@ -2,7 +2,7 @@ import Data from '../data';
 import hardware from '../../hardware-data';
 import {observer, aboutPerformance} from '../../performance';
 import {log} from '../../log-output';
-import { clear} from '../data/db';
+import {clear} from '../data/db';
 
 
 import {
@@ -23,11 +23,11 @@ class DataProcess {
     private data: Data; //数据class对象
     private newPageUrl: String = ''; //当前页面地址指针
     private oldPageUrl: String = ''; //旧页面地址指针（应用首次进入为''）
-    private pageTimeIfon: PageTime = {};
+    private pageTimeIfon: PageTime = {};//页面停留事件计算
     private pageAllrecord: { [key: string]: string } = {};//记录进入页面页面
 
     private isPosition: Boolean = false;
-    private userInfo: any = null; //用户信息 任何数据类型 有开发人员参数
+    private userInfo: { userCode: string } | null = null; //用户信息 任何数据类型
     private maxRequesGatewayLength: Number = 10; ////最大一次性上次数据条数， 默认10条， 1 ： 实时上传
     private url: string = ''; //网络请求地址
     private requesKey: string = 'value'; //网络请求请求参数字段
@@ -51,7 +51,12 @@ class DataProcess {
         return {allResourceLoad, aboutPerformances};
     }
 
-    //页面事件处理
+    /**
+     * 页面事件处理
+     * @param newPageUrl 新地址
+     * @param oldPageUrl 旧地址
+     * @param actionType 采集类型
+     */
     pageUrlRecord(newPageUrl: String, oldPageUrl: String = '', actionType: string): void {
         this.oldPageUrl = oldPageUrl;
         this.newPageUrl = newPageUrl;
@@ -69,7 +74,10 @@ class DataProcess {
             const leaveTime: number = this.pageTimeIfon[oldPageUrl as string].leaveTime as number;
             const entetTim: number = this.pageTimeIfon[oldPageUrl as string].entetTim as number;
             this.pageTimeIfon[oldPageUrl as string].remainTime = leaveTime - entetTim;
+
+            /**采集数据处理 **/
             this.track(this.pageTimeIfon[oldPageUrl as string]);
+            /**清空已计算结果页面指针 **/
             delete this.pageTimeIfon[oldPageUrl as string];
         }
 
@@ -78,6 +86,8 @@ class DataProcess {
             let allResourceLoadList: {
                 allResource: Indicators[] | []
             } = {allResource: []}
+
+            /** 判断页面是否首次加载(observer页面资源只会首次加载进行计算性能分析)**/
             if (!this.pageAllrecord[newPageUrl as string]) {
                 allResourceLoadList.allResource = await observer();
             }
@@ -89,6 +99,7 @@ class DataProcess {
                 ...aboutPerformances,
                 ...allResourceLoadList
             };
+            //页面记录版记录页面
             this.pageAllrecord[newPageUrl as string] = newPageUrl;
 
         } catch (logInfo) {
@@ -99,50 +110,6 @@ class DataProcess {
         }
     }
 
-    /**
-     * 节点采集数据处理
-     *  @param {string } parmas.id 数据id
-     *  @param {string } parmas.info  数据信息
-     *  @param {string } parmas.pageUrl 页面地址
-     *  @param {string } parmas.actionType 数据id
-     */
-    async track(parmas: TimeInfo | ViewIfo): Promise<void> {
-        const GlobalData: SystemData = await this.getGlobalData();
-
-        const data: TimeInfo | ViewIfo | SystemData | CommonData = {
-            ...parmas,
-            ...GlobalData,
-            userInfo: this.userInfo,
-            projectName: this.projectName
-        };
-        let logMake: String = ''
-        if (data.actionType === 'click') {
-            // @ts-ignore
-            logMake = data?.elementText as String;
-        } else {
-            logMake = data.actionType as String
-        }
-        log({
-            logMake,
-            logInfo: data,
-        });
-        if (this.url && this.maxRequesGatewayLength === 1) {
-            try {
-                await Http.httpRequestPost({[this.requesKey]: data})
-                // @ts-ignore
-                await clear()
-            } catch (logInfo) {
-                log({
-                    logInfo,
-                    logMake: '上传数据失败',
-                });
-                // @ts-ignore
-                await clear()
-            }
-        } else {
-            this.data.storageData(data);
-        }
-    }
 
     /**
      * 页面数据数据处理
@@ -155,11 +122,9 @@ class DataProcess {
         let urlSplit: RegExpMatchArray | null | string = 'index';
         let url: String = this.newPageUrl;
         if (parmas.pageUrl) {
-            // urlSplit = parmas.pageUrl.split('/#')[1];
-            // url = urlSplit === '/' ? 'index' : urlSplit;
-            // console.log('parmas.pageUrl', parmas.pageUrl);
             const regex = /\/([^\/]*)$/;
             urlSplit = parmas.pageUrl.match(regex);
+            // @ts-ignore
             url = urlSplit[1] === '' ? 'index' : urlSplit[1];
         }
         const pageHandle: PageHandle = {
@@ -177,6 +142,47 @@ class DataProcess {
         hadle();
     }
 
+    //采集数据最终处理
+    async track(parmas: TimeInfo | ViewIfo): Promise<void> {
+        const GlobalData: SystemData = await this.getGlobalData();
+
+        /**采集数据+通用数据 = 全量数据 **/
+        const data: TimeInfo | ViewIfo | SystemData | CommonData = {
+            ...parmas,
+            ...GlobalData,
+            userInfo: this.userInfo,
+            projectName: this.projectName
+        };
+        let logMake: String = ''
+        if (data.actionType === 'click') {
+            // @ts-ignore
+            logMake = data?.elementText as String;
+        } else {
+            logMake = data.actionType as String
+        }
+        log({
+            logMake,
+            logInfo: data,
+        });
+
+        /**实时上传数据 **/
+        if (this.url && this.maxRequesGatewayLength === 1) {
+            try {
+                await Http.httpRequestPost({[this.requesKey]: data})
+                // @ts-ignore
+                await clear()
+            } catch (logInfo) {
+                log({
+                    logInfo,
+                    logMake: '上传数据失败',
+                });
+                // @ts-ignore
+                await clear()
+            }
+        } else {
+            this.data.storageData(data);
+        }
+    }
 
     /**
      * 设置项目名

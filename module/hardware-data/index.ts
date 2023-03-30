@@ -3,17 +3,21 @@ const systemType: String = getOSname();
 const phoneInfo: PhoneInfo = getOSVersion();
 const { availHeight, availWidth, width, height } = window.screen;
 
-//获取通用硬件数据
+/**
+ * 获取通用硬件数据
+ * @param isPosition 是否获取定位
+ */
 async function getGlobalData({ isPosition }: { isPosition: Boolean }): Promise<SystemData> {
-	let position: Position | String = '';
+	let position: Position | unknown = '';
 	if (isPosition) {
 		try {
 			position = (await getPosition()) as Position;
 		} catch (e) {
-			position = e;
+			position = e ;
 			//TODO handle the exception
 		}
 	}
+
 
 	return {
 		availWidth: availWidth.toString(),

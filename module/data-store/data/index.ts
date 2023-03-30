@@ -30,7 +30,7 @@ function clearData() {//清楚数据
 
 class Data {
     private projectName: String = '';
-    private userInfo: any = {};
+    private userInfo: { userCode: string }  = {userCode:''};
     private requesKey: string = 'value';
     private url: string = '';
     private http: Http;
@@ -43,33 +43,6 @@ class Data {
         this.http = new Http()
     }
 
-    /**
-     * 设置是用户信息
-     */
-    setUserInfo(userInfo: any): void {
-        this.userInfo = userInfo;
-    }
-
-    /**
-     * 设置请求url 用于请求开关
-     */
-    setUrl(url: string): void {
-        this.url = url;
-    }
-
-    /**
-     * 设置网络请求 数据字段
-     */
-    setRequesKey(requesKey: string): void {
-        this.requesKey = requesKey;
-    }
-
-    /**
-     * 设置项目名
-     */
-    setPackageName(projectName: String): void {
-        this.projectName = projectName;
-    }
 
     DBinit() {
         createDB(this.projectName + this.userInfo.userCode, '1', [
@@ -154,6 +127,34 @@ class Data {
     setMaxRequesLength(maxRequesGatewayLength: Number = 10) {
         this.maxRequesGatewayLength = maxRequesGatewayLength;
     }
+    /**
+     * 设置是用户信息
+     */
+    setUserInfo(userInfo: any): void {
+        this.userInfo = userInfo;
+    }
+
+    /**
+     * 设置请求url 用于请求开关
+     */
+    setUrl(url: string): void {
+        this.url = url;
+    }
+
+    /**
+     * 设置网络请求 数据字段
+     */
+    setRequesKey(requesKey: string): void {
+        this.requesKey = requesKey;
+    }
+
+    /**
+     * 设置项目名
+     */
+    setPackageName(projectName: String): void {
+        this.projectName = projectName;
+    }
+
 }
 
 export default Data;

@@ -12,7 +12,7 @@ export interface InitParm {
     frameType: string;
     reques?: Reques;
     projectName: String; //项目名
-    userInfo: unknown; //用户信息
+    userInfo: {userCode:string}; //用户信息
     monitoSwitch?: Boolean; //是否开启埋点
     showLog: Boolean; //是否打印日志
     isPosition: Boolean; //是否获取定位信息

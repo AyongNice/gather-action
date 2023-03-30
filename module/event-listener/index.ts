@@ -18,17 +18,6 @@ function addEventListener<T extends EventTarget, E extends Evt>({
 }) {
 	element.addEventListener(type, handler as (evt: Event) => void);
 }
-// function addEventListener<T extends EventTarget, E extends Event>(
-// 	element: T,
-// 	type: string,
-// 	handler: (this: T, evt: E) => void
-// ) {
-// 	element.addEventListener(type, handler as (evt: Event) => void);
-// }
-// addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) =>
-// any, options?: boolean | AddEventListenerOptions): void;
-
-// addEventListener(type: string, listener: EventListenerOrEventelementect, options?: boolean | AddEventListenerOptions): void;
 
 export default {
 	addEventListener
