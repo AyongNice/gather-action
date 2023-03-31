@@ -153,12 +153,14 @@ class DataProcess {
             userInfo: this.userInfo,
             projectName: this.projectName
         };
-        let logMake: String = ''
+        let logMake: String | undefined = data.actionType;
         if (data.actionType === 'click') {
             // @ts-ignore
             logMake = data?.elementText as String;
-        } else {
-            logMake = data.actionType as String
+        }
+        if (data.actionType === 'click-img') {
+            // @ts-ignore
+            logMake = data.imgSrc as String
         }
         log({
             logMake,

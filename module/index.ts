@@ -11,7 +11,7 @@ class MonitoAction {
         this.monitoInit = new MonitoInit();
     }
 
-    init(parmas: InitParm): void {
+    init(parmas: { userInfo: { userCode: string }; globaMonitoImgList: { businessData: string; imgSrc: string }[]; monitoSwitch: boolean; frameType: string; reques: { requerequesKeysHeader: {}; requesKey: string; maxRequesGatewayLength: number; requestUrl: string }; isPosition: boolean; globaMonitoConfigList: ({ elementText: string; elementEevent: string } | { elementText: string; elementEevent: string })[]; projectName: string; showLog: boolean }): void {
         const {
             reques,
             monitoSwitch = true,

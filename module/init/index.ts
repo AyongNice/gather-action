@@ -32,7 +32,6 @@ class MonitoInit {
     }
 
     eventInit(parmas: InitParm) {
-        console.log('parmas', parmas)
         this.monitoConfigList = parmas.globaMonitoConfigList;
         this.monitoImgList = parmas.globaMonitoImgList ?? [];
 
@@ -45,11 +44,11 @@ class MonitoInit {
 
         this.dataProcess.dbInit();
 
-        /** view采集key表 **/
+        /** view采集哈希表 **/
         const viewMap: { [key: string]: ViewIfo } = {}
         this.monitoConfigList.forEach(_ => viewMap[_.elementText as string] = _)
 
-        /** img采集key表 **/
+        /** img采集哈希表 **/
         const imgMap: { [key: string]: ImgIfo } = {}
         this.monitoImgList.forEach(_ => imgMap[_.imgSrc as string] = _)
         const regex: RegExp = /\/([^\/]*)$/;
@@ -68,7 +67,14 @@ class MonitoInit {
                     const res = dom?.src.match(regex)[1];
                     // @ts-ignore
                     if (dom?.src.includes(imgMap[res]?.imgSrc)) {
-
+                        await this.dataProcess.track({
+                            id: timestamp.toString(),
+                            pageUrl: dom.baseURI,
+                            actionType: 'click-img',
+                            // @ts-ignore
+                            imgSrc:imgMap[res]?.imgSrc,
+                            ...imgMap[imgMap[res]?.imgSrc as string]
+                        });
                     }
                 }
                 if (dom) {

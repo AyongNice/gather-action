@@ -1,5 +1,3 @@
-const list: string[] = ['vue', 'react', 'wx', 'uniapp'];
-
 export interface Reques {
     //上传数据配置
     requestUrl: string; //上报数据请求地址
@@ -8,31 +6,36 @@ export interface Reques {
     maxRequesGatewayLength?: Number; //最大一次性上次数据条数， 默认10条， 1 ： 实时上传
 }
 
+interface FrameType {
+    [key: string]: ['vue', 'react', 'wx', 'uniapp'];
+}
+
+//dom事件采集
+export interface ViewIfo {
+    id?: String; //数据ID
+    pageUrl?: String; //当前页面地址
+    elementText?: String; //dom文案
+    imgSrc?: String; //图片文案
+    actionType?: String; //采集类型
+}
+
+export interface ImgIfo {
+    imgSrc: String | string;
+    [key: string]: String;
+}
+
 export interface InitParm {
-    frameType: string;
+    frameType: FrameType;
     reques?: Reques;
     projectName: String; //项目名
-    userInfo: {userCode:string}; //用户信息
+    userInfo: { userCode: string }; //用户信息
     monitoSwitch?: Boolean; //是否开启埋点
     showLog: Boolean; //是否打印日志
     isPosition: Boolean; //是否获取定位信息
     globaMonitoConfigList: ViewIfo[]; //埋点采集配置
-    globaMonitoImgList?:ImgIfo[]//图片点击事件采集
-}
-export interface ImgIfo {
-    imgSrc:String | string;
+    globaMonitoImgList?: ImgIfo[]//图片点击事件采集
 }
 
-enum Direction {
-    Up = 10, // 值默认为 0
-    Down = 13, // 值默认为 1
-    Left = 20, // 值默认为 2
-    Right // 值默认为 3
-}
-
-interface FrameType {
-    [key: string]: ['vue', 'react', 'wx', 'uniapp'];
-}
 
 export interface CommonData {
     projectName: String; //项目名
@@ -47,14 +50,6 @@ export interface EventListenerPar<T extends EventTarget, E extends Event> {
     useCapture: Boolean;
 }
 
-export interface ViewIfo {
-    //dom事件采集
-    id?: String; //数据ID
-    pageUrl?: String; //当前页面地址
-    elementText: String; //dom文案
-    actionType?: String; //采集类型
-    domType?:keyof ['IMG','view']
-}
 
 export interface PageInfo {
     //页面事件触发采集第一步数据处理

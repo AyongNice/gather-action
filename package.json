@@ -1,7 +1,8 @@
 {
 	"name": "monito-action",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"description": "H5全埋点组件",
+	"main": "./dist/monito-action.js",
 	"author": "AyongNice@163.com",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
@@ -16,7 +17,8 @@
 		"数据统计",
 		"数据上报",
 		"IndexDB",
-		"轻量级"
+		"轻量级",
+		"TypeScript"
 	],
 	"license": "ISC",
 	"peerDependencies": {

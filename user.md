@@ -130,7 +130,10 @@ monitoAction.init({
     },{
         elementText: 'add',
         elementEevent: '',
-    }, ]
+    }, ],
+    globaMonitoImgList:[
+        {imgSrc:'ayong.jpeg',businessData:'1号广告位置'}
+    ]
 })
 export default monitoAction
 ```
@@ -158,16 +161,17 @@ import monitoAction from '../../action'
 
 ### 四:init入参方法介绍
 
-| 字段名                | 类型          | 是否必传 | 介绍                                                         |
-| --------------------- | ------------- | -------- | ------------------------------------------------------------ |
-| frameType             | FrameType     | 必传     | 项目框架类型;见下方详情 [FrameType介绍 ](#FrameType)         |
-| globaMonitoConfigList | MonitoList[ ] | 必传     | 埋点采集配置列表;见下方详情  [MonitoList介绍 ](#MonitoList)  |
+| 字段名                | 类型            | 是否必传 | 介绍                                                |
+| --------------------- |---------------| -------- |---------------------------------------------------|
+| frameType             | FrameType     | 必传     | 项目框架类型;见下方详情 [FrameType介绍 ](#FrameType)           |
+| globaMonitoConfigList | MonitoList[ ] | 必传     | 埋点采集配置列表;见下方详情  [MonitoList介绍 ](#MonitoList)      |
 | userInfo              | UserInfo      | 必传     | 一般信息;见下方详情[userInfo介绍 ](#userInfo)                |
-| projectName           | string        | 必传     | 项目名称                                                     |
-| reques                | Reques        | 非必传   | 上报数据入参  [reques介绍 ](#reques)                         |
-| monitoSwitch          | Boolean       | 非必传   | 是否开启埋点 默认开启 true                                   |
+| projectName           | string        | 必传     | 项目名称                                              |
+| reques                | Reques        | 非必传   | 上报数据入参  [reques介绍 ](#reques)                      |
+| monitoSwitch          | Boolean       | 非必传   | 是否开启埋点 默认开启 true                                  |
 | showLog               | Boolean       | 非必传   | 是否打印日志 默认false不打印                                 |
 | isPosition            | Boolean       | 非必传   | 是否获取定位信息 默认不获取 fasle<br/>(获取定位用户页面会收到是否获取定位的系统弹框) |
+| globaMonitoImgList            | ImgList[]     | 非必传   | 项目图片交互数据采集 数据格式详情[ImgList介绍 ](#ImgList)                                  |
 
 #### <span id="FrameType">FrameType框架类型字段介绍 </span>
 
@@ -180,10 +184,10 @@ import monitoAction from '../../action'
 
 #### <span id="MonitoList">MonitoList埋点采集配置列表字段介绍</span>
 
-| 值          | 类型   | 介绍                                         |
-| ----------- | ------ | -------------------------------------------- |
-| elementText | string | 需要采集的dom节点文案                        |
-| ...         | any    | 该dom节点的其他业务数据直接增加即可 示例如下 |
+| 值          | 类型   | 介绍                        |
+| ----------- | ------ |---------------------------|
+| elementText | string | 需要采集的dom节点文案              |
+| ...         | any    | 该dom节点的其他业务数据；字段名直接增加即可 示例如下 |
 
 ```js
 const globaMonitoConfigList: [{
@@ -195,12 +199,33 @@ const globaMonitoConfigList: [{
     }, ]
 
 monitoAction.init({
-  ... 
-  globaMonitoConfigList,
-  ....
+    ...
+        globaMonitoConfigList,
+    ....
 })
 ```
+#### <span id="ImgList">ImgList图片埋点采集配置列表字段介绍</span>
 
+| 值          | 类型   | 介绍                        |
+| ----------- | ------ |---------------------------|
+| imgSrc | string | 需要采集的图片文件名（包含文件后缀）        |
+| ...         | any    | 该图片的其他业务数据；字段名直接增加即可 示例如下 |
+
+```js
+const globaMonitoConfigList: [{
+        imgSrc: 'star.jpeg',
+        businessData: '这是星星图片业务数据',
+    },{
+    imgSrc: 'pasword.png',
+        businessData: '这是验证码图片业务数据',
+    }, ]
+
+monitoAction.init({
+    ...
+        globaMonitoConfigList,
+    ....
+})
+```
 #### <span id="userInfo">userInfo埋点采集配置列表字段介绍</span>
 
 | 值      | 类型   | 介绍                                               |
