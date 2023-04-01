@@ -6,7 +6,7 @@
 该组件已发布npm🪧库
 下载方式<br/> 
 npm i monito-action<br/>  
-具体使用说明见 user.md
+具体使用说明见 https://mp.weixin.qq.com/s?__biz=MzkxMjI2NzgyMw==&mid=2247483966&idx=1&sn=931f0258b5fb366bd3a694cf53e0dafa
 
 
 ## 技术栈介绍
