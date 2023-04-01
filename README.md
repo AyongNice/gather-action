@@ -1,5 +1,12 @@
 #monito-action                                         
 #H5全埋点组件 
+#全埋点 
+
+#该组件已发布npm🪧库
+#下载方式 
+npm i monito-action 
+具体使用说明见 user.md
+
 
 ## 技术栈介绍
 
