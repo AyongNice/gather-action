@@ -2,9 +2,10 @@
 #H5全埋点组件 
 #全埋点 
 
-#该组件已发布npm🪧库
-#下载方式 
-npm i monito-action 
+## npm仓库介绍
+该组件已发布npm🪧库
+下载方式<br/> 
+npm i monito-action<br/>  
 具体使用说明见 user.md
 
 
