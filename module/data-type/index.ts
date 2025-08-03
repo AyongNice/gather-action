@@ -43,11 +43,16 @@ export interface CommonData {
     actionType?: String;
 }
 
+interface Options {
+    capture: Boolean;
+}
+
 export interface EventListenerPar<T extends EventTarget, E extends Event> {
     element: T;
     type: string;
     handler: (e: E) => void;
     useCapture: Boolean;
+    options?:Options
 }
 
 
