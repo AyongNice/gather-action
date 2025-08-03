@@ -57,6 +57,7 @@ class MonitoInit {
         event.addEventListener({
             element: document,
             type: 'click',
+            options: { capture: true },
             handler: async (evt: PointerEvent) => {
                 const timestamp: Number = new Date().getTime();
                 //通过配置信息进行过滤点击选择
