@@ -55,7 +55,7 @@ class MonitoInit {
 
         // 全局点击事件
         event.addEventListener({
-            element: window,
+            element: document,
             type: 'click',
             handler: async (evt: PointerEvent) => {
                 const timestamp: Number = new Date().getTime();
