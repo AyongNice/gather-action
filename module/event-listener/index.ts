@@ -10,13 +10,15 @@ import { EventListenerPar,Evt } from '../data-type';
 function addEventListener<T extends EventTarget, E extends Evt>({
 	element,
 	type,
-	handler
+	handler,
+	options
 }: {
 	element: T;
 	type: string;
 	handler: (this: T, evt: E) => void;
+	options:{capture:Boolean};
 }) {
-	element.addEventListener(type, handler as (evt: Event) => void);
+	element.addEventListener(type, handler as (evt: Event) => void,options);
 }
 
 export default {
