@@ -1,0 +1,335 @@
+<!-- 方法注入测试页面 -->
+<view class="test-container">
+    <!-- 页面标题 -->
+    <view class="header">
+        <text class="title">方法注入测试</text>
+        <text class="subtitle">检测 globalClick 等方法是否正确注入</text>
+    </view>
+
+    <!-- 注入状态显示 -->
+    <view class="status-section">
+        <text class="status-label">注入状态:</text>
+        <text class="status-value {{injectionStatus.includes('成功') ? 'success' : 'error'}}">
+            {{injectionStatus}}
+        </text>
+    </view>
+
+    <!-- 测试结果列表 -->
+    <view class="results-section">
+        <text class="section-title">方法检测结果</text>
+        
+        <view wx:for="{{testResults}}" wx:key="method" class="result-item">
+            <text class="method-name">{{item.method}}</text>
+            <text class="method-status {{item.exists ? 'exists' : 'missing'}}">
+                {{item.exists ? '✅ 存在' : '❌ 缺失'}}
+            </text>
+            <text class="method-type">({{item.type}})</text>
+        </view>
+    </view>
+
+    <!-- 测试按钮区域 -->
+    <view class="test-section">
+        <text class="section-title">功能测试</text>
+        
+        <!-- 使用 globalClick 的测试 -->
+        <view class="test-group">
+            <text class="test-label">globalClick 测试:</text>
+            <view class="test-btn" data-text="globalClick测试" bindtap="globalClick">
+                点击测试 globalClick
+            </view>
+        </view>
+
+        <!-- 使用 autoTrack 的测试 -->
+        <view class="test-group">
+            <text class="test-label">autoTrack 测试:</text>
+            <view class="test-btn" data-text="autoTrack测试" bindtap="autoTrack">
+                点击测试 autoTrack
+            </view>
+        </view>
+
+        <!-- 使用 handleAnyClick 的测试 -->
+        <view class="test-group">
+            <text class="test-label">handleAnyClick 测试:</text>
+            <view class="test-btn" data-text="handleAnyClick测试" bindtap="handleAnyClick">
+                点击测试 handleAnyClick
+            </view>
+        </view>
+
+        <!-- 普通方法测试 -->
+        <view class="test-group">
+            <text class="test-label">普通方法测试:</text>
+            <view class="test-btn normal" bindtap="testButtonClick">
+                点击测试普通方法
+            </view>
+        </view>
+    </view>
+
+    <!-- 全局捕获测试 -->
+    <view class="global-test-section" bindtap="globalClick">
+        <text class="section-title">全局捕获测试</text>
+        <text class="test-description">
+            这个区域绑定了 bindtap="globalClick"，点击任何子元素都会被捕获
+        </text>
+        
+        <view class="capture-area">
+            <view class="capture-item" data-text="捕获测试1">
+                <text>捕获测试 1</text>
+            </view>
+            
+            <view class="capture-item" data-text="捕获测试2">
+                <text>捕获测试 2</text>
+            </view>
+            
+            <view class="capture-item" data-src="test-image">
+                <text>图片捕获测试</text>
+            </view>
+            
+            <view class="capture-item" data-track="custom-test">
+                <text>自定义捕获测试</text>
+            </view>
+        </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-section">
+        <button class="action-btn" bindtap="recheck">
+            重新检测
+        </button>
+        
+        <button class="action-btn" bindtap="showDetails">
+            显示详细信息
+        </button>
+    </view>
+
+    <!-- 使用说明 -->
+    <view class="instruction-section">
+        <text class="section-title">使用说明</text>
+        <view class="instruction-list">
+            <text class="instruction-item">1. 查看"注入状态"是否显示"✅ 注入成功"</text>
+            <text class="instruction-item">2. 检查"方法检测结果"中所有方法是否都显示"✅ 存在"</text>
+            <text class="instruction-item">3. 点击各个测试按钮，验证方法是否正常工作</text>
+            <text class="instruction-item">4. 在"全局捕获测试"区域点击，验证事件捕获</text>
+            <text class="instruction-item">5. 查看控制台日志获取详细信息</text>
+        </view>
+    </view>
+</view>
+
+<style>
+.test-container {
+    padding: 30rpx;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+.header {
+    text-align: center;
+    padding: 40rpx 20rpx;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20rpx;
+    margin-bottom: 30rpx;
+}
+
+.title {
+    font-size: 36rpx;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10rpx;
+}
+
+.subtitle {
+    font-size: 28rpx;
+    opacity: 0.9;
+}
+
+.status-section {
+    display: flex;
+    align-items: center;
+    padding: 25rpx;
+    background-color: white;
+    border-radius: 15rpx;
+    margin-bottom: 30rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.status-label {
+    font-size: 32rpx;
+    font-weight: bold;
+    margin-right: 20rpx;
+}
+
+.status-value {
+    font-size: 32rpx;
+    font-weight: bold;
+}
+
+.status-value.success {
+    color: #34c759;
+}
+
+.status-value.error {
+    color: #ff3b30;
+}
+
+.results-section {
+    background-color: white;
+    border-radius: 15rpx;
+    padding: 25rpx;
+    margin-bottom: 30rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.section-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20rpx;
+    display: block;
+}
+
+.result-item {
+    display: flex;
+    align-items: center;
+    padding: 15rpx 0;
+    border-bottom: 1rpx solid #f0f0f0;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.method-name {
+    flex: 1;
+    font-size: 30rpx;
+    color: #333;
+    font-family: monospace;
+}
+
+.method-status {
+    font-size: 28rpx;
+    margin-right: 15rpx;
+}
+
+.method-status.exists {
+    color: #34c759;
+}
+
+.method-status.missing {
+    color: #ff3b30;
+}
+
+.method-type {
+    font-size: 24rpx;
+    color: #666;
+    font-family: monospace;
+}
+
+.test-section {
+    background-color: white;
+    border-radius: 15rpx;
+    padding: 25rpx;
+    margin-bottom: 30rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.test-group {
+    margin-bottom: 25rpx;
+}
+
+.test-group:last-child {
+    margin-bottom: 0;
+}
+
+.test-label {
+    font-size: 28rpx;
+    color: #666;
+    display: block;
+    margin-bottom: 10rpx;
+}
+
+.test-btn {
+    padding: 20rpx;
+    background-color: #007aff;
+    color: white;
+    text-align: center;
+    border-radius: 10rpx;
+    font-weight: bold;
+}
+
+.test-btn.normal {
+    background-color: #5856d6;
+}
+
+.global-test-section {
+    background-color: white;
+    border-radius: 15rpx;
+    padding: 25rpx;
+    margin-bottom: 30rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+    border: 2rpx dashed #007aff;
+}
+
+.test-description {
+    font-size: 28rpx;
+    color: #666;
+    margin-bottom: 20rpx;
+    display: block;
+}
+
+.capture-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15rpx;
+}
+
+.capture-item {
+    padding: 20rpx;
+    background-color: #f8f8f8;
+    text-align: center;
+    border-radius: 10rpx;
+    border: 1rpx solid #e0e0e0;
+}
+
+.action-section {
+    display: flex;
+    gap: 20rpx;
+    margin-bottom: 30rpx;
+}
+
+.action-btn {
+    flex: 1;
+    background-color: #ff9500;
+    color: white;
+    border: none;
+    border-radius: 10rpx;
+    font-weight: bold;
+}
+
+.instruction-section {
+    background-color: white;
+    border-radius: 15rpx;
+    padding: 25rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.instruction-list {
+    margin-top: 15rpx;
+}
+
+.instruction-item {
+    display: block;
+    font-size: 28rpx;
+    color: #666;
+    margin-bottom: 10rpx;
+    padding-left: 20rpx;
+    position: relative;
+}
+
+.instruction-item::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #007aff;
+    font-weight: bold;
+}
+</style>

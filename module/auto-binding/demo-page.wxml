@@ -1,0 +1,215 @@
+<!-- 小程序智能自动绑定演示页面 -->
+<!-- 注意：这个页面无需在 JS 中写任何埋点相关代码！ -->
+
+<view class="container">
+    <!-- 页面标题 -->
+    <view class="header">
+        <text class="title">智能自动绑定演示</text>
+        <text class="subtitle">无需手动绑定事件，埋点自动工作</text>
+    </view>
+
+    <!-- 商品展示区 -->
+    <view class="product-section">
+        <image 
+            src="/images/product-main.jpg" 
+            data-src="product-banner.jpg"
+            class="product-image"
+            mode="aspectFill"
+        />
+        
+        <view class="product-info">
+            <text class="product-name">精选商品</text>
+            <text class="product-price">¥299.00</text>
+            <text class="product-desc">高品质商品，值得拥有</text>
+        </view>
+    </view>
+
+    <!-- 操作按钮区 -->
+    <view class="action-section">
+        <!-- 主要操作按钮 -->
+        <button 
+            class="primary-btn" 
+            data-text="立即购买"
+            type="primary"
+        >
+            立即购买
+        </button>
+        
+        <button 
+            class="secondary-btn" 
+            data-text="加入购物车"
+            type="default"
+        >
+            加入购物车
+        </button>
+        
+        <!-- 次要操作 -->
+        <view class="secondary-actions">
+            <view 
+                class="action-item" 
+                data-text="收藏商品"
+            >
+                <image src="/images/icon-favorite.png" class="action-icon" />
+                <text>收藏</text>
+            </view>
+            
+            <view 
+                class="action-item" 
+                data-text="分享商品"
+            >
+                <image src="/images/icon-share.png" class="action-icon" />
+                <text>分享</text>
+            </view>
+            
+            <view 
+                class="action-item" 
+                data-text="客服咨询"
+            >
+                <image src="/images/icon-service.png" class="action-icon" />
+                <text>客服</text>
+            </view>
+        </view>
+    </view>
+
+    <!-- 商品详情区 -->
+    <view class="details-section">
+        <view class="section-title">
+            <text>商品详情</text>
+        </view>
+        
+        <view class="detail-list">
+            <view 
+                class="detail-item" 
+                data-text="查看规格"
+                wx:for="{{detailList}}" 
+                wx:key="id"
+            >
+                <text class="detail-label">{{item.label}}</text>
+                <text class="detail-value">{{item.value}}</text>
+                <image src="/images/icon-arrow.png" class="detail-arrow" />
+            </view>
+        </view>
+    </view>
+
+    <!-- 推荐商品区 -->
+    <view class="recommend-section">
+        <view class="section-title">
+            <text>推荐商品</text>
+        </view>
+        
+        <scroll-view class="recommend-list" scroll-x="true">
+            <view 
+                class="recommend-item"
+                data-text="推荐商品"
+                wx:for="{{recommendList}}" 
+                wx:key="id"
+            >
+                <image 
+                    src="{{item.image}}" 
+                    data-src="recommend-product.jpg"
+                    class="recommend-image"
+                />
+                <text class="recommend-name">{{item.name}}</text>
+                <text class="recommend-price">¥{{item.price}}</text>
+            </view>
+        </scroll-view>
+    </view>
+
+    <!-- 评价区 -->
+    <view class="review-section">
+        <view class="section-title">
+            <text>用户评价</text>
+            <view 
+                class="more-reviews" 
+                data-text="查看更多评价"
+            >
+                <text>查看更多</text>
+                <image src="/images/icon-arrow.png" class="arrow-icon" />
+            </view>
+        </view>
+        
+        <view class="review-list">
+            <view 
+                class="review-item"
+                data-text="查看评价详情"
+                wx:for="{{reviewList}}" 
+                wx:key="id"
+            >
+                <view class="review-header">
+                    <image src="{{item.avatar}}" class="user-avatar" />
+                    <text class="user-name">{{item.userName}}</text>
+                    <view class="rating">
+                        <image 
+                            src="/images/star-filled.png" 
+                            class="star"
+                            wx:for="{{item.rating}}" 
+                            wx:key="*this"
+                        />
+                    </view>
+                </view>
+                <text class="review-content">{{item.content}}</text>
+            </view>
+        </view>
+    </view>
+
+    <!-- 底部导航 -->
+    <view class="bottom-nav">
+        <view 
+            class="nav-item" 
+            data-text="返回首页"
+        >
+            <image src="/images/icon-home.png" class="nav-icon" />
+            <text>首页</text>
+        </view>
+        
+        <view 
+            class="nav-item" 
+            data-text="查看购物车"
+        >
+            <image src="/images/icon-cart.png" class="nav-icon" />
+            <text>购物车</text>
+            <view class="cart-badge" wx:if="{{cartCount > 0}}">
+                <text>{{cartCount}}</text>
+            </view>
+        </view>
+        
+        <view 
+            class="nav-item" 
+            data-text="个人中心"
+        >
+            <image src="/images/icon-user.png" class="nav-icon" />
+            <text>我的</text>
+        </view>
+    </view>
+
+    <!-- 浮动按钮 -->
+    <view 
+        class="float-btn" 
+        data-text="快速购买"
+    >
+        <image src="/images/icon-quick-buy.png" class="float-icon" />
+    </view>
+</view>
+
+<!-- 
+使用说明：
+1. 这个页面展示了各种可能需要埋点的元素
+2. 每个需要埋点的元素都添加了 data-text 或 data-src 属性
+3. 无需在 JS 中写任何点击事件处理代码
+4. 智能自动绑定系统会自动扫描并绑定这些元素
+5. 当用户点击时，会自动触发埋点数据收集
+
+支持的元素类型：
+- button: 按钮点击
+- image: 图片点击  
+- view: 容器点击
+- text: 文本点击
+- scroll-view: 滚动容器内的元素点击
+
+埋点数据包含：
+- elementText: 从 data-text 属性获取
+- imgSrc: 从 data-src 属性获取
+- actionType: 从配置列表匹配
+- pageUrl: 当前页面路径
+- timestamp: 点击时间戳
+-->

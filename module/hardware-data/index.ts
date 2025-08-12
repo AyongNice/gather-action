@@ -1,34 +1,52 @@
 import { SystemData, PhoneInfo, Position } from '../data-type'; //假数据
-const systemType: String = getOSname();
-const phoneInfo: PhoneInfo = getOSVersion();
-const { availHeight, availWidth, width, height } = window.screen;
+
+
 
 /**
  * 获取通用硬件数据
  * @param isPosition 是否获取定位
  */
-async function getGlobalData({ isPosition }: { isPosition: Boolean }): Promise<SystemData> {
-	let position: Position | unknown = '';
-	if (isPosition) {
-		try {
-			position = (await getPosition()) as Position;
-		} catch (e) {
-			position = e ;
-			//TODO handle the exception
+function getGlobalData({ isPosition }: { isPosition: Boolean }): Promise<SystemData> {
+
+	return new Promise(async (resolve, reject) => {
+
+
+
+		let position: Position | unknown = '';
+
+		if (isPosition) {
+			try {
+				// 使用 Promise.race 添加整体超时控制
+				position = await Promise.race([
+					getPosition(),
+					new Promise((_, reject) =>
+						setTimeout(() => reject('获取位置信息总体超时'), 3000)
+					)
+				]) as Position;
+			} catch (e) {
+				console.warn('获取位置信息失败:', e);
+				position = typeof e === 'string' ? e : '位置获取失败';
+			}
 		}
-	}
+		setTimeout(() => {
+			const systemType: String = getOSname();
+			const phoneInfo: PhoneInfo = getOSVersion();
+			const { availHeight, availWidth, width, height } = window.screen;
 
+			resolve({
+				availWidth: availWidth.toString(),
+				availHeight: availHeight.toString(),
+				resolution: `${width}*${height}`,
+				systemType,
+				...phoneInfo,
+				position
+			})
+		})
 
-	return {
-		availWidth: availWidth.toString(),
-		availHeight: availHeight.toString(),
-		resolution: `${width}*${height}`,
-		systemType,
-		...phoneInfo,
-		position
-	};
+	});
 }
 function getOSname() {
+	console.log('获取全局数据', window);
 	//获取系统
 	let e = 'Unknown';
 	if (window.navigator.userAgent.indexOf('Windows NT 10.0') !== -1) return (e = 'Windows 10');
@@ -72,24 +90,37 @@ function getOSVersion() {
 //获取经纬度
 function getPosition(): Promise<Position | String> {
 	return new Promise((resolve, reject) => {
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(
-				function(position) {
-					let latitude = position.coords.latitude;
-					let longitude = position.coords.longitude;
-					let data = {
-						latitude: latitude,
-						longitude: longitude
-					};
-					resolve(data);
-				},
-				function(e) {
-					reject(e);
-				}
-			);
-		} else {
+		if (!navigator.geolocation) {
 			reject('你的浏览器不支持当前地理位置信息获取');
+			return;
 		}
+
+		// 设置超时时间为5秒
+		const timeoutId = setTimeout(() => {
+			reject('获取地理位置超时');
+		}, 5000);
+
+		navigator.geolocation.getCurrentPosition(
+			function (position) {
+				clearTimeout(timeoutId);
+				let latitude = position.coords.latitude;
+				let longitude = position.coords.longitude;
+				let data = {
+					latitude: latitude,
+					longitude: longitude
+				};
+				resolve(data);
+			},
+			function (e) {
+				clearTimeout(timeoutId);
+				reject(e);
+			},
+			{
+				timeout: 5000, // 5秒超时
+				enableHighAccuracy: false, // 不要求高精度，提高响应速度
+				maximumAge: 300000 // 5分钟内的缓存位置可接受
+			}
+		);
 	});
 }
 

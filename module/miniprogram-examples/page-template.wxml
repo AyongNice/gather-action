@@ -1,0 +1,76 @@
+<!-- 微信小程序页面模板示例 -->
+<view class="container">
+  <!-- 商品图片 - 需要在 data-src 中设置图片标识 -->
+  <image 
+    src="{{productImage}}" 
+    data-src="product-banner.jpg"
+    data-text="商品图片"
+    bindtap="onImageClick"
+    class="product-image"
+  />
+
+  <!-- 商品信息 -->
+  <view class="product-info">
+    <text class="product-title">{{productTitle}}</text>
+    <text class="product-price">¥{{productPrice}}</text>
+  </view>
+
+  <!-- 操作按钮 - 需要在 data-text 中设置按钮文本用于埋点匹配 -->
+  <view class="action-buttons">
+    <button 
+      class="buy-btn" 
+      data-text="立即购买"
+      bindtap="onBuyClick"
+    >
+      立即购买
+    </button>
+    
+    <button 
+      class="cart-btn" 
+      data-text="加入购物车"
+      bindtap="onAddToCartClick"
+    >
+      加入购物车
+    </button>
+  </view>
+
+  <!-- 其他可点击元素 -->
+  <view class="other-actions">
+    <text 
+      class="share-text" 
+      data-text="分享商品"
+      bindtap="handleGlobalClick"
+    >
+      分享给朋友
+    </text>
+    
+    <text 
+      class="favorite-text" 
+      data-text="收藏商品"
+      bindtap="handleGlobalClick"
+    >
+      收藏
+    </text>
+  </view>
+
+  <!-- 商品详情列表 -->
+  <view class="product-details">
+    <view 
+      wx:for="{{detailList}}" 
+      wx:key="index"
+      class="detail-item"
+      data-text="{{item.title}}"
+      bindtap="handleGlobalClick"
+    >
+      <text>{{item.title}}: {{item.value}}</text>
+    </view>
+  </view>
+</view>
+
+<!-- 
+使用说明：
+1. 所有需要埋点的元素都要添加 bindtap="handleGlobalClick" 或具体的点击事件
+2. 文本元素需要在 data-text 中设置文本内容，用于与配置列表匹配
+3. 图片元素需要在 data-src 中设置图片标识，用于与图片配置列表匹配
+4. 如果有特殊的点击处理逻辑，可以绑定具体的方法，然后在方法中调用 handleGlobalClick
+-->

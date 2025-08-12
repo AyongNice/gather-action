@@ -1,0 +1,396 @@
+<!-- 全局事件系统演示页面 -->
+<!-- 核心特点：在根容器上绑定一次事件，捕获所有子元素点击 -->
+
+<view class="page-container" bindtap="globalClick">
+    <!-- 页面头部 -->
+    <view class="page-header">
+        <text class="title">全局事件捕获演示</text>
+        <text class="subtitle">一次绑定，全局生效</text>
+    </view>
+
+    <!-- 主要内容区域 -->
+    <view class="main-content">
+        
+        <!-- 操作按钮区 -->
+        <view class="button-section">
+            <text class="section-title">操作按钮（自动埋点）</text>
+            
+            <!-- 这些按钮只需要 data 属性，无需单独绑定事件 -->
+            <view class="action-btn primary" data-text="打开按钮">
+                <text>打开</text>
+            </view>
+            
+            <view class="action-btn secondary" data-text="关闭按钮">
+                <text>关闭</text>
+            </view>
+            
+            <view class="action-btn success" data-text="确认按钮">
+                <text>确认</text>
+            </view>
+            
+            <view class="action-btn warning" data-text="取消按钮">
+                <text>取消</text>
+            </view>
+        </view>
+
+        <!-- 图片区域 -->
+        <view class="image-section">
+            <text class="section-title">图片埋点</text>
+            
+            <image class="demo-image" 
+                   src="/images/banner1.jpg" 
+                   data-src="banner-image-1" 
+                   mode="aspectFill" />
+            
+            <image class="demo-image" 
+                   src="/images/banner2.jpg" 
+                   data-src="banner-image-2" 
+                   mode="aspectFill" />
+        </view>
+
+        <!-- 列表区域 -->
+        <view class="list-section">
+            <text class="section-title">列表项埋点</text>
+            
+            <view wx:for="{{productList}}" wx:key="id" 
+                  class="list-item" 
+                  data-text="商品项目{{item.id}}">
+                <view class="item-content">
+                    <text class="item-name">{{item.name}}</text>
+                    <text class="item-price">¥{{item.price}}</text>
+                </view>
+                <view class="item-arrow">></view>
+            </view>
+        </view>
+
+        <!-- 卡片区域 -->
+        <view class="card-section">
+            <text class="section-title">卡片埋点</text>
+            
+            <view class="info-card" data-text="用户信息卡片">
+                <view class="card-header">
+                    <text class="card-title">用户信息</text>
+                </view>
+                <view class="card-body">
+                    <text class="card-text">点击查看详细信息</text>
+                </view>
+            </view>
+            
+            <view class="info-card" data-text="设置卡片">
+                <view class="card-header">
+                    <text class="card-title">系统设置</text>
+                </view>
+                <view class="card-body">
+                    <text class="card-text">点击进入设置页面</text>
+                </view>
+            </view>
+        </view>
+
+        <!-- 自定义埋点区域 -->
+        <view class="custom-section">
+            <text class="section-title">自定义埋点</text>
+            
+            <view class="custom-item" data-track="special-action-1">
+                <text>特殊操作 1</text>
+            </view>
+            
+            <view class="custom-item" data-track="special-action-2">
+                <text>特殊操作 2</text>
+            </view>
+        </view>
+
+        <!-- 嵌套元素测试 -->
+        <view class="nested-section">
+            <text class="section-title">嵌套元素测试</text>
+            
+            <view class="nested-container" data-text="嵌套容器点击">
+                <view class="nested-header">
+                    <text>嵌套容器</text>
+                </view>
+                <view class="nested-content">
+                    <view class="nested-item">
+                        <text>嵌套项目 1</text>
+                    </view>
+                    <view class="nested-item">
+                        <text>嵌套项目 2</text>
+                    </view>
+                </view>
+            </view>
+        </view>
+
+        <!-- 无埋点区域（对比测试） -->
+        <view class="no-track-section">
+            <text class="section-title">无埋点区域</text>
+            
+            <view class="normal-item">
+                <text>普通元素（无 data 属性，不会触发埋点）</text>
+            </view>
+        </view>
+    </view>
+
+    <!-- 调试信息 -->
+    <view class="debug-panel">
+        <text class="debug-title">调试信息</text>
+        <view class="debug-info">
+            <text>最后点击: {{lastClickInfo}}</text>
+        </view>
+        <view class="debug-info">
+            <text>埋点次数: {{trackCount}}</text>
+        </view>
+        <view class="debug-info">
+            <text>总点击次数: {{totalClickCount}}</text>
+        </view>
+    </view>
+
+    <!-- 底部操作 -->
+    <view class="bottom-actions">
+        <view class="action-item" data-text="清除调试信息">
+            <text>清除信息</text>
+        </view>
+        <view class="action-item" data-text="查看埋点数据">
+            <text>查看数据</text>
+        </view>
+    </view>
+</view>
+
+<!-- 样式 -->
+<style>
+.page-container {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    padding: 20rpx;
+}
+
+.page-header {
+    text-align: center;
+    padding: 40rpx 20rpx;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20rpx;
+    margin-bottom: 30rpx;
+}
+
+.title {
+    font-size: 36rpx;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10rpx;
+}
+
+.subtitle {
+    font-size: 28rpx;
+    opacity: 0.9;
+}
+
+.main-content {
+    flex: 1;
+}
+
+.section-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20rpx;
+    display: block;
+}
+
+/* 按钮样式 */
+.button-section {
+    margin-bottom: 40rpx;
+}
+
+.action-btn {
+    padding: 25rpx;
+    margin: 15rpx 0;
+    border-radius: 12rpx;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+
+.action-btn.primary { background-color: #007aff; }
+.action-btn.secondary { background-color: #5856d6; }
+.action-btn.success { background-color: #34c759; }
+.action-btn.warning { background-color: #ff9500; }
+
+/* 图片样式 */
+.image-section {
+    margin-bottom: 40rpx;
+}
+
+.demo-image {
+    width: 100%;
+    height: 300rpx;
+    border-radius: 12rpx;
+    margin: 15rpx 0;
+}
+
+/* 列表样式 */
+.list-section {
+    margin-bottom: 40rpx;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    padding: 25rpx;
+    margin: 10rpx 0;
+    background-color: white;
+    border-radius: 12rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.item-content {
+    flex: 1;
+}
+
+.item-name {
+    font-size: 32rpx;
+    color: #333;
+    display: block;
+    margin-bottom: 8rpx;
+}
+
+.item-price {
+    font-size: 28rpx;
+    color: #ff3b30;
+    font-weight: bold;
+}
+
+.item-arrow {
+    color: #c7c7cc;
+    font-size: 32rpx;
+}
+
+/* 卡片样式 */
+.card-section {
+    margin-bottom: 40rpx;
+}
+
+.info-card {
+    background-color: white;
+    border-radius: 12rpx;
+    margin: 15rpx 0;
+    overflow: hidden;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.card-header {
+    padding: 25rpx;
+    background-color: #f8f8f8;
+    border-bottom: 1rpx solid #e5e5e5;
+}
+
+.card-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+}
+
+.card-body {
+    padding: 25rpx;
+}
+
+.card-text {
+    color: #666;
+    font-size: 28rpx;
+}
+
+/* 自定义埋点样式 */
+.custom-section {
+    margin-bottom: 40rpx;
+}
+
+.custom-item {
+    padding: 25rpx;
+    margin: 15rpx 0;
+    background-color: #af52de;
+    color: white;
+    text-align: center;
+    border-radius: 12rpx;
+    font-weight: bold;
+}
+
+/* 嵌套元素样式 */
+.nested-section {
+    margin-bottom: 40rpx;
+}
+
+.nested-container {
+    background-color: white;
+    border-radius: 12rpx;
+    overflow: hidden;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.nested-header {
+    padding: 25rpx;
+    background-color: #007aff;
+    color: white;
+    font-weight: bold;
+}
+
+.nested-content {
+    padding: 20rpx;
+}
+
+.nested-item {
+    padding: 15rpx;
+    margin: 10rpx 0;
+    background-color: #f8f8f8;
+    border-radius: 8rpx;
+}
+
+/* 无埋点区域样式 */
+.no-track-section {
+    margin-bottom: 40rpx;
+}
+
+.normal-item {
+    padding: 25rpx;
+    background-color: #8e8e93;
+    color: white;
+    text-align: center;
+    border-radius: 12rpx;
+}
+
+/* 调试面板样式 */
+.debug-panel {
+    background-color: #2c2c2e;
+    color: white;
+    padding: 25rpx;
+    border-radius: 12rpx;
+    margin: 30rpx 0;
+}
+
+.debug-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    margin-bottom: 15rpx;
+    display: block;
+}
+
+.debug-info {
+    font-family: monospace;
+    font-size: 26rpx;
+    margin: 8rpx 0;
+    opacity: 0.9;
+}
+
+/* 底部操作样式 */
+.bottom-actions {
+    display: flex;
+    gap: 20rpx;
+    margin-top: 30rpx;
+}
+
+.action-item {
+    flex: 1;
+    padding: 25rpx;
+    background-color: #ff3b30;
+    color: white;
+    text-align: center;
+    border-radius: 12rpx;
+    font-weight: bold;
+}
+</style>

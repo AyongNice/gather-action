@@ -2,7 +2,6 @@ export interface Reques {
     //上传数据配置
     requestUrl: string; //上报数据请求地址
     requesHeader: any; //请求头
-    requesKey?: string; //上传埋点数据后端接口字段key
     maxRequesGatewayLength?: Number; //最大一次性上次数据条数， 默认10条， 1 ： 实时上传
 }
 

@@ -1,80 +1,75 @@
-import {createDB, onDBSelect, getAll, getCount, clear} from './db.ts';
 import Http from '../../report';
 import {log} from '../../log-output';
-
-async function getAllData() {//获取所有数据
-    let data: any = [];
-    try {
-        data = await getAll('monito')
-    } catch (e) {
-        log({
-            logMake: '获取数据错误',
-            logInfo: e
-        });
-    }
-
-    function map(_?: any) {
-        return JSON.parse(_.value)
-    }
-
-    return data.map(map)
-}
-
-function getCountData() {//获取所有数据条数
-    return getCount('monito')
-}
-
-function clearData() {//清楚数据
-    return clear('monito')
-}
+import { StorageAdapterFactory, StorageAdapter, eventAdapter } from '../storage-adapter';
 
 class Data {
     private projectName: String = '';
-    private userInfo: { userCode: string }  = {userCode:''};
-    private requesKey: string = 'value';
+    private userInfo: { userCode: string } = {userCode:''};
     private url: string = '';
     private http: Http;
     private maxRequesGatewayLength: Number = 10;//最大存储量，达到立刻上传数据
-    private monito: Event = new CustomEvent('monito', {
-        detail: {getAllData, getCountData, clearData}
-    });
+    private storageAdapter: StorageAdapter;
 
     constructor() {
-        this.http = new Http()
+        this.http = new Http();
+        this.storageAdapter = StorageAdapterFactory.create();
     }
 
+    async DBinit() {
+        try {
+            const dbName = this.projectName + this.userInfo.userCode;
+            await this.storageAdapter.init(dbName);
+            
+            // 派发初始化完成事件
+            eventAdapter.dispatchEvent('monito', {
+                getAllData: () => this.getAllData(),
+                getCountData: () => this.getCountData(),
+                clearData: () => this.clearData()
+            });
+        } catch (error) {
+            log({
+                logMake: '数据库初始化失败',
+                logInfo: error
+            });
+        }
+    }
 
-    DBinit() {
-        createDB(this.projectName + this.userInfo.userCode, '1', [
-            {
-                storeName: 'monito',
-                option: {
-                    keyPath: 'id'
-                },
-                index: [
-                    {
-                        name: 'id', //时间戳
-                        keyPath: 'id', //主键key
-                        unique: true //是否唯一
-                    },
-                    {
-                        name: 'elementText', //dom文案， 页面为 ‘page’
-                        keyPath: 'elementText',
-                        unique: false
-                    },
-                    {
-                        name: 'pageUrl', //页面地址
-                        keyPath: 'pageUrl',
-                        unique: false
-                    },
-                    {
-                        name: 'actionType', //采集类型
-                        keyPath: 'actionType',
-                        unique: false
-                    }
-                ]
-            }
-        ]);
+    // 获取所有数据
+    async getAllData(): Promise<any[]> {
+        try {
+            return await this.storageAdapter.getAll();
+        } catch (error) {
+            log({
+                logMake: '获取数据错误',
+                logInfo: error
+            });
+            return [];
+        }
+    }
+
+    // 获取数据条数
+    async getCountData(): Promise<number> {
+        try {
+            return await this.storageAdapter.getCount();
+        } catch (error) {
+            log({
+                logMake: '获取数据条数错误',
+                logInfo: error
+            });
+            return 0;
+        }
+    }
+
+    // 清除数据
+    async clearData(): Promise<void> {
+        try {
+            await this.storageAdapter.clear();
+        } catch (error) {
+            log({
+                logMake: '清除数据错误',
+                logInfo: error
+            });
+        }
     }
 
     /**
@@ -82,51 +77,44 @@ class Data {
      * @param {string} storage.id 数据key
      * @param {Object} storage.info 数据
      */
-    storageData(data: any) {
+    async storageData(data: any) {
+        try {
+            // 使用存储适配器存储数据
+            await this.storageAdapter.add(data);
+            
+            // 派发数据存储事件
+            eventAdapter.dispatchEvent('monito', {
+                getAllData: () => this.getAllData(),
+                getCountData: () => this.getCountData(),
+                clearData: () => this.clearData()
+            });
 
-        onDBSelect('monito', '1', async ({add}) => {
-            console.log()
-            try {
-                add({
-                    id: data.id || data?.entetTim || new Date().getTime().toString(),
-                    elementText: data?.elementText,
-                    actionType: data?.actionType,
-                    pageUrl: data?.pageUrl,
-                    value: JSON.stringify(data)
-                });
-            } catch (logInfo) {
+            // 检查是否需要上传数据
+            const count = await this.getCountData();
+            if (this.url && count > Number(this.maxRequesGatewayLength)) {
+                const allData = await this.getAllData();
+                // 直接发送数组格式的数据，而不是包装在对象中
+                const logInfo = await Http.httpRequestPost(allData);
                 log({
                     logInfo,
-                    logMake: '存储数据失败'
+                    logMake: '上传数据成功'
                 });
+                await this.clearData();
             }
-            try {
-                const count = await getCountData();
-                window.dispatchEvent(this.monito);
-                if (this.url && Number(count) > this.maxRequesGatewayLength) { //超过最大存储量上传
-                    const allData = await getAllData();
-                    const logInfo = await Http.httpRequestPost({[this.requesKey]: allData})
-                    log({
-                        logInfo,
-                        logMake: '上传数据成功'
-                    });
-                    await clearData();
-                }
-            } catch (logInfo) {
-                //TODO handle the exception
-                await clearData();
-                log({
-                    logInfo,
-                    logMake: '上传数据失败'
-                });
-
-            }
-        });
+        } catch (logInfo) {
+            // 上传失败时清除数据
+            await this.clearData();
+            log({
+                logInfo,
+                logMake: '存储或上传数据失败'
+            });
+        }
     }
 
     setMaxRequesLength(maxRequesGatewayLength: Number = 10) {
         this.maxRequesGatewayLength = maxRequesGatewayLength;
     }
+
     /**
      * 设置是用户信息
      */
@@ -142,19 +130,11 @@ class Data {
     }
 
     /**
-     * 设置网络请求 数据字段
-     */
-    setRequesKey(requesKey: string): void {
-        this.requesKey = requesKey;
-    }
-
-    /**
      * 设置项目名
      */
     setPackageName(projectName: String): void {
         this.projectName = projectName;
     }
-
 }
 
 export default Data;

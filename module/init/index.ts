@@ -1,7 +1,94 @@
+// 立即导入劫持模块，确保在页面创建前执行
+import '../auto-binding/immediate-page-hijack';
+
 import event from '../event-listener';
 import DataProcess from '../data-store/data-process';
 import {InitParm, Evt, ViewIfo, TimeInfo, ImgIfo} from '../data-type';
 import {log} from "../log-output";
+import { MiniProgramAutoBinding } from '../auto-binding/miniprogram-auto-binding';
+
+// 环境检测工具
+class EnvironmentDetector {
+    static isWeb(): boolean {
+        return typeof window !== 'undefined' && typeof document !== 'undefined';
+    }
+
+    static isMiniProgram(): boolean {
+        // 微信小程序
+        if (typeof (globalThis as any).wx !== 'undefined' && (globalThis as any).wx.getSystemInfoSync) {
+            return true;
+        }
+        // 支付宝小程序
+        if (typeof (globalThis as any).my !== 'undefined' && (globalThis as any).my.getSystemInfoSync) {
+            return true;
+        }
+        // 百度小程序
+        if (typeof (globalThis as any).swan !== 'undefined' && (globalThis as any).swan.getSystemInfoSync) {
+            return true;
+        }
+        // 字节跳动小程序
+        if (typeof (globalThis as any).tt !== 'undefined' && (globalThis as any).tt.getSystemInfoSync) {
+            return true;
+        }
+        return false;
+    }
+
+    static isUniApp(): boolean {
+        return typeof (globalThis as any).uni !== 'undefined';
+    }
+}
+
+// 兼容的元素获取工具
+class ElementHelper {
+    /**
+     * 兼容的获取点击元素方法
+     * @param evt 事件对象
+     * @returns 元素信息或null
+     */
+    static getClickedElement(evt: any): {
+        element?: Element | null;
+        nodeName?: string;
+        textContent?: string;
+        src?: string;
+        baseURI?: string;
+        target?: any;
+    } | null {
+        if (EnvironmentDetector.isWeb()) {
+            // Web 环境
+            const pointerEvt = evt as PointerEvent;
+            const dom = document.elementFromPoint(pointerEvt.pageX, pointerEvt.pageY);
+            return {
+                element: dom,
+                nodeName: dom?.nodeName,
+                textContent: dom?.textContent,
+                src: (dom as any)?.src,
+                baseURI: dom?.baseURI,
+                target: evt.target
+            };
+        } else if (EnvironmentDetector.isUniApp()) {
+            // UniApp 环境 - 使用 event.target
+            return {
+                element: null,
+                nodeName: evt.target?.tagName?.toUpperCase(),
+                textContent: evt.target?.dataset?.text || evt.target?.innerText,
+                src: evt.target?.src,
+                baseURI: (globalThis as any).getCurrentPages?.()[((globalThis as any).getCurrentPages?.().length || 1) - 1]?.route,
+                target: evt.target
+            };
+        } else if (EnvironmentDetector.isMiniProgram()) {
+            // 小程序环境 - 使用 event.target 和 dataset
+            return {
+                element: null,
+                nodeName: evt.target?.tagName?.toUpperCase(),
+                textContent: evt.target?.dataset?.text || evt.detail?.text,
+                src: evt.target?.dataset?.src || evt.detail?.src,
+                baseURI: (globalThis as any).getCurrentPages?.()[((globalThis as any).getCurrentPages?.().length || 1) - 1]?.route,
+                target: evt.target
+            };
+        }
+        return null;
+    }
+}
 
 class MonitoInit {
     private dataProcess: DataProcess;//数据处理对象
@@ -31,18 +118,132 @@ class MonitoInit {
         this.dataProcess = new DataProcess();
     }
 
-    eventInit(parmas: InitParm) {
+    /**
+     * 初始化点击事件 - 兼容多环境
+     */
+    private initClickEvent(viewMap: { [key: string]: ViewIfo }, imgMap: { [key: string]: ImgIfo }, regex: RegExp) {
+        if (EnvironmentDetector.isWeb()) {
+            // Web 环境使用原有逻辑
+            event.addEventListener({
+                element: document,
+                type: 'click',
+                options: { capture: true },
+                handler: async (evt: PointerEvent) => {
+                    const timestamp: Number = new Date().getTime();
+                    const elementInfo = ElementHelper.getClickedElement(evt);
+
+                    if (!elementInfo) return;
+
+                    // 处理图片点击
+                    if (elementInfo.nodeName === 'IMG' && elementInfo.src) {
+                        const res = elementInfo.src.match(regex)?.[1];
+                        if (res && elementInfo.src.includes(imgMap[res]?.imgSrc as string)) {
+                            await this.dataProcess.track({
+                                id: timestamp.toString(),
+                                pageUrl: elementInfo.baseURI,
+                                actionType: 'click-img',
+                                ...imgMap[res]
+                            });
+                        }
+                    }
+
+                    // 处理文本点击
+                    if (elementInfo.textContent) {
+                        const trimmedText = elementInfo.textContent.trim();
+                        if (viewMap[trimmedText]) {
+                            console.log('点击配置dom');
+                            await this.dataProcess.track({
+                                id: timestamp.toString(),
+                                pageUrl: elementInfo.baseURI,
+                                actionType: 'click',
+                                elementText: elementInfo.textContent,
+                                ...viewMap[trimmedText]
+                            });
+                        }
+                    }
+                }
+            });
+        } else {
+            // 小程序/UniApp 环境 - 智能自动绑定
+            this.initMiniProgramAutoBinding(viewMap, imgMap, regex);
+        }
+    }
+
+    /**
+     * 小程序环境智能自动绑定
+     */
+    private initMiniProgramAutoBinding(viewMap: { [key: string]: ViewIfo }, imgMap: { [key: string]: ImgIfo }, regex: RegExp) {
+        // 使用专门的自动绑定系统
+        const autoBinding = new MiniProgramAutoBinding(
+            viewMap,
+            imgMap,
+            regex,
+            this.handleGlobalClick.bind(this)
+        );
+
+        // 初始化自动绑定
+        autoBinding.init();
+
+        console.log('小程序智能自动绑定已启动');
+    }
+
+    /**
+     * 小程序环境的点击事件处理方法
+     * 现在可以自动调用，也支持手动调用
+     */
+    public async handleGlobalClick(evt: any) {
+        const timestamp: Number = new Date().getTime();
+        const elementInfo = ElementHelper.getClickedElement(evt);
+
+        if (!elementInfo) return;
+
+        const viewMap: { [key: string]: ViewIfo } = {}
+        this.monitoConfigList.forEach(_ => viewMap[_.elementText as string] = _)
+
+        const imgMap: { [key: string]: ImgIfo } = {}
+        this.monitoImgList.forEach(_ => imgMap[_.imgSrc as string] = _)
+        const regex: RegExp = /\/([^\/]*)$/;
+
+        // 处理图片点击
+        if (elementInfo.nodeName === 'IMAGE' && elementInfo.src) {
+            const res = elementInfo.src.match(regex)?.[1];
+            if (res && elementInfo.src.includes(imgMap[res]?.imgSrc as string)) {
+                await this.dataProcess.track({
+                    id: timestamp.toString(),
+                    pageUrl: elementInfo.baseURI,
+                    actionType: 'click-img',
+                    ...imgMap[res]
+                });
+            }
+        }
+
+        // 处理文本点击
+        if (elementInfo.textContent) {
+            const trimmedText = elementInfo.textContent.trim();
+            if (viewMap[trimmedText]) {
+                console.log('点击配置dom');
+                await this.dataProcess.track({
+                    id: timestamp.toString(),
+                    pageUrl: elementInfo.baseURI,
+                    actionType: 'click',
+                    elementText: elementInfo.textContent,
+                    ...viewMap[trimmedText]
+                });
+            }
+        }
+    }
+
+    async eventInit(parmas: InitParm) {
         this.monitoConfigList = parmas.globaMonitoConfigList;
         this.monitoImgList = parmas.globaMonitoImgList ?? [];
 
         this.dataProcess.setisPosition(parmas.isPosition);
         this.dataProcess.setPackageName(parmas.projectName);
         this.dataProcess.setUserInfo(parmas.userInfo);
-        this.dataProcess.setMaxRequesLength(parmas.maxRequesGatewayLength)
-        this.dataProcess.setRequesKey(parmas.reques?.requesKey as string)
+        this.dataProcess.setMaxRequesLength(parmas.reques?.maxRequesGatewayLength)
         this.dataProcess.setUrl(parmas.reques?.requestUrl as string)
 
-        this.dataProcess.dbInit();
+        await this.dataProcess.dbInit();
 
         /** view采集哈希表 **/
         const viewMap: { [key: string]: ViewIfo } = {}
@@ -53,46 +254,8 @@ class MonitoInit {
         this.monitoImgList.forEach(_ => imgMap[_.imgSrc as string] = _)
         const regex: RegExp = /\/([^\/]*)$/;
 
-        // 全局点击事件
-        event.addEventListener({
-            element: document,
-            type: 'click',
-            options: { capture: true },
-            handler: async (evt: PointerEvent) => {
-                const timestamp: Number = new Date().getTime();
-                //通过配置信息进行过滤点击选择
-                const dom = document.elementFromPoint(evt.pageX, evt.pageY);
-
-                if (dom?.nodeName === 'IMG') {
-                    // @ts-ignore
-                    const res = dom?.src.match(regex)[1];
-                    // @ts-ignore
-                    if (dom?.src.includes(imgMap[res]?.imgSrc)) {
-                        await this.dataProcess.track({
-                            id: timestamp.toString(),
-                            pageUrl: dom.baseURI,
-                            actionType: 'click-img',
-                            // @ts-ignore
-                            imgSrc:imgMap[res]?.imgSrc,
-                            ...imgMap[imgMap[res]?.imgSrc as string]
-                        });
-                    }
-                }
-                if (dom) {
-                    if (viewMap[dom?.textContent?.trim() as string]) {
-                        await this.dataProcess.track({
-                            id: timestamp.toString(),
-                            pageUrl: dom.baseURI,
-                            actionType: 'click',
-                            // @ts-ignore
-                            "elementText": dom?.textContent,
-                            ...viewMap[dom?.textContent?.trim() as string]
-                        });
-                    }
-
-                }
-            }
-        });
+        // 全局点击事件 - 兼容多环境
+        this.initClickEvent(viewMap, imgMap, regex);
         //页面显示/隐藏
         event.addEventListener({
             element: document,
@@ -146,12 +309,12 @@ class MonitoInit {
                     actionType: this.pageMonito.uniapp.actionType
                 });
 
-                if (['vue', 'react'].includes(parmas.frameType as string)) {//vue项目 页面进入类型指针 互换
+                if (['vue', 'react'].includes(String(parmas.frameType))) {//vue项目 页面进入类型指针 互换
                     this.pageMonito.uniapp = this.pageMonito.vue
                 }
             }
         });
-        if (parmas.frameType as string === 'uniapp') {
+        if (String(parmas.frameType) === 'uniapp') {
             event.addEventListener({
                 element: window,
                 type: 'pushState',
@@ -173,7 +336,7 @@ class MonitoInit {
     }
 
     /**
-     * @param {Object} parmas 数据处理
+     * @param {Object} params 数据处理
      */
     async track(params: TimeInfo | ViewIfo): Promise<void> {
         try {
