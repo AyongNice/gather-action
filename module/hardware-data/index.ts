@@ -46,7 +46,6 @@ function getGlobalData({ isPosition }: { isPosition: Boolean }): Promise<SystemD
 	});
 }
 function getOSname() {
-	console.log('获取全局数据', window);
 	//获取系统
 	let e = 'Unknown';
 	if (window.navigator.userAgent.indexOf('Windows NT 10.0') !== -1) return (e = 'Windows 10');

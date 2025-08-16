@@ -157,7 +157,6 @@ class DataProcess {
 	async track(parmas : TimeInfo | ViewIfo) : Promise<void> {
 		
 		const GlobalData : SystemData = await this.getGlobalData();
-		console.log('track', parmas, GlobalData);
 		/**采集数据+通用数据 = 全量数据 **/
 		const data : TimeInfo | ViewIfo | SystemData | CommonData = {
 			...parmas,

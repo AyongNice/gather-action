@@ -1,6 +1,6 @@
 {
 	"name": "monito-action",
-	"version": "1.0.9",
+	"version": "1.1.0",
 	"description": "H5全埋点组件",
 	"main": "./dist/monito-action.js",
 	"author": "AyongNice@163.com",
@@ -9,6 +9,7 @@
 		"build": "vite build",
 		"prepublishOnly": "npm run build"
 	},
+	"registry": "https://registry.npmjs.org/",
 	"keywords": [
 		"前端",
 		"埋点",

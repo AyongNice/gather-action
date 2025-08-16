@@ -127,17 +127,74 @@ class MonitoInit {
             event.addEventListener({
                 element: document,
                 type: 'click',
-                options: { capture: true },
                 handler: async (evt: PointerEvent) => {
                     const timestamp: Number = new Date().getTime();
-                    const elementInfo = ElementHelper.getClickedElement(evt);
+
+                    // 兼容不同框架的元素获取方式
+                    let elementInfo: Element | null = null;
+
+                    // 方法1: 尝试使用 evt.target (适用于大多数情况)
+                    if (evt.target && (evt.target as Element).nodeType === Node.ELEMENT_NODE) {
+                        elementInfo = evt.target as Element;
+                    }
+
+                    // 方法2: 尝试使用 evt.currentTarget (Vue/React 可能使用)
+                    if (!elementInfo && evt.currentTarget && (evt.currentTarget as Element).nodeType === Node.ELEMENT_NODE) {
+                        elementInfo = evt.currentTarget as Element;
+                    }
+
+                    // 方法3: 使用坐标获取元素 (兜底方案)
+                    if (!elementInfo && evt.pageX !== undefined && evt.pageY !== undefined) {
+                        elementInfo = document.elementFromPoint(evt.pageX, evt.pageY);
+                    }
+
+                    // 方法4: 使用 clientX/clientY (备选坐标)
+                    if (!elementInfo && evt.clientX !== undefined && evt.clientY !== undefined) {
+                        elementInfo = document.elementFromPoint(evt.clientX, evt.clientY);
+                    }
 
                     if (!elementInfo) return;
 
+                    // 获取实际的文本内容，兼容不同框架
+                    const getElementText = (element: Element): string => {
+                        // 方法1: 优先使用 innerText（用户看到的渲染文本）
+                        if ((element as any).innerText !== undefined && (element as any).innerText !== null) {
+                            const innerText = (element as any).innerText.trim();
+                            if (innerText) return innerText;
+                        }
+
+                        // 方法2: 使用 textContent（包含所有文本节点）
+                        if (element.textContent !== undefined && element.textContent !== null) {
+                            const textContent = element.textContent.trim();
+                            if (textContent) return textContent;
+                        }
+
+                        // 方法3: 尝试获取 Vue/React 组件的文本内容
+                        // 查找第一个有文本的子元素
+                        const findTextInChildren = (el: Element): string => {
+                            for (let i = 0; i < el.children.length; i++) {
+                                const child = el.children[i];
+                                const childText = (child as any).innerText || child.textContent;
+                                if (childText && childText.trim()) {
+                                    return childText.trim();
+                                }
+                                // 递归查找
+                                const deepText = findTextInChildren(child);
+                                if (deepText) return deepText;
+                            }
+                            return '';
+                        };
+
+                        return findTextInChildren(element);
+                    };
+
+                    const elementText = getElementText(elementInfo);
+         
+
                     // 处理图片点击
-                    if (elementInfo.nodeName === 'IMG' && elementInfo.src) {
-                        const res = elementInfo.src.match(regex)?.[1];
-                        if (res && elementInfo.src.includes(imgMap[res]?.imgSrc as string)) {
+                    if (elementInfo.nodeName === 'IMG' && (elementInfo as any).src) {
+                        const res = (elementInfo as any).src.match(regex)?.[1];
+                        if (res && (elementInfo as any).src.includes(imgMap[res]?.imgSrc as string)) {
                             await this.dataProcess.track({
                                 id: timestamp.toString(),
                                 pageUrl: elementInfo.baseURI,
@@ -148,16 +205,14 @@ class MonitoInit {
                     }
 
                     // 处理文本点击
-                    if (elementInfo.textContent) {
-                        const trimmedText = elementInfo.textContent.trim();
-                        if (viewMap[trimmedText]) {
-                            console.log('点击配置dom');
+                    if (elementText) {
+                        if (viewMap[elementText]) {
                             await this.dataProcess.track({
                                 id: timestamp.toString(),
                                 pageUrl: elementInfo.baseURI,
                                 actionType: 'click',
-                                elementText: elementInfo.textContent,
-                                ...viewMap[trimmedText]
+                                elementText: elementText,
+                                ...viewMap[elementText]
                             });
                         }
                     }
@@ -221,7 +276,6 @@ class MonitoInit {
         if (elementInfo.textContent) {
             const trimmedText = elementInfo.textContent.trim();
             if (viewMap[trimmedText]) {
-                console.log('点击配置dom');
                 await this.dataProcess.track({
                     id: timestamp.toString(),
                     pageUrl: elementInfo.baseURI,
@@ -231,6 +285,10 @@ class MonitoInit {
                 });
             }
         }
+    }
+
+    getUrl( ){
+        
     }
 
     async eventInit(parmas: InitParm) {
@@ -244,6 +302,15 @@ class MonitoInit {
         this.dataProcess.setUrl(parmas.reques?.requestUrl as string)
 
         await this.dataProcess.dbInit();
+
+   
+        // 初始化当前页面的停留时间记录
+        this.dataProcess.pageTrack({
+            id: new Date().getTime().toString(),
+            info: '应用首次进入',
+            pageUrl: document.baseURI,
+            actionType: 'pageLoad'
+        });
 
         /** view采集哈希表 **/
         const viewMap: { [key: string]: ViewIfo } = {}
@@ -314,12 +381,18 @@ class MonitoInit {
                 }
             }
         });
+   
+
         if (String(parmas.frameType) === 'uniapp') {
+                 //获取页面地址拦地址
+
             event.addEventListener({
                 element: window,
                 type: 'pushState',
                 handler: event => {
                     const url: String = event.arguments[2] as String;
+     
+
                     console.log('页面跳转', url);
                     // this.pageUrlRecord(url as String, this.newPageUrl as String);
                     this.dataProcess.pageTrack({
